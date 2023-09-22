@@ -1,4 +1,4 @@
-name: cw native build
+name: cw jar build
 on: [push]
 jobs:
     build:
