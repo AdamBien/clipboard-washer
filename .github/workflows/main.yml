@@ -1,0 +1,51 @@
+name: cw native build
+on: [push]
+jobs:
+    build:
+      name: native ${{ matrix.os }} build
+      runs-on: ${{ matrix.os }}
+      defaults:
+        run:
+          working-directory: .
+      strategy:
+        matrix:
+          os: [macos-latest, windows-latest, ubuntu-latest]
+      steps:
+        - name: checkout code
+          uses: actions/checkout@v3
+        - uses: graalvm/setup-graalvm@v1
+          with:
+            version: 'latest'
+            java-version: '21'
+            components: 'native-image'
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            native-image-job-reports: 'true'
+        - name: environment check
+          run: |
+            echo "GRAALVM_HOME: $GRAALVM_HOME"
+            echo "JAVA_HOME: $JAVA_HOME"
+            java --version
+        - name: maven build
+          run: mvn --no-transfer-progress package
+        - name: native build
+          run: native-image -jar target/cw.jar
+        - name: upload unix binaries
+          if: ${{matrix.os != 'windows-latest'}}
+          uses: actions/upload-artifact@v3
+          with:
+            name: cw-${{ matrix.os }}
+            path: cw/cw
+            if-no-files-found: error
+        - name: upload windows binary
+          if: ${{matrix.os == 'windows-latest'}}
+          uses: actions/upload-artifact@v3
+          with:
+            name: cw-${{ matrix.os }}
+            path: cw/cw.exe
+            if-no-files-found: error
+        - name: upload JAR
+          uses: actions/upload-artifact@v3
+          with:
+            name: cw.jar
+            path: cw/target/cw.jar
+            if-no-files-found: error
