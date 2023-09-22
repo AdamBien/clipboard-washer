@@ -20,5 +20,5 @@ jobs:
           uses: actions/upload-artifact@v3
           with:
             name: cw.jar
-            path: cw/target/cw.jar
+            path: target/cw.jar
             if-no-files-found: error
